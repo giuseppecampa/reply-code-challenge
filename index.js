@@ -14,27 +14,6 @@ let C = 0;
 let R = 0;
 let S = 0;
 
-// Functions
-const printTable = (table) => {
-  for (let row of table.slice(0, 100)) {
-    console.log(row.join(" "));
-  }
-  if (table.length > 100) {
-    console.log("...");
-  }
-  console.log();
-};
-
-const printList = (list_) => {
-  for (let l of list_.slice(0, 100)) {
-    console.log(l);
-  }
-  if (list_.length > 100) {
-    console.log("...");
-  }
-  console.log();
-};
-
 const moduleRow = (irow) => (irow >= 0 ? irow % R : R - 1);
 
 const moduleCol = (icol) => (icol >= 0 ? icol % C : C - 1);
@@ -96,6 +75,7 @@ for (let FILENAME of FILENAMES) {
       current: { i: -1, j: -1 },
       path: "",
     }));
+  // .sort(({ length: l1 }, { length: l2 }) => l1 - l2);
 
   matrix = [];
 
@@ -115,20 +95,20 @@ for (let FILENAME of FILENAMES) {
       cells.push({ i, j, value: matrix[i][j].value });
     }
   }
-  topCells = cells
+  cells
     .filter(({ value }) => value !== "*")
-    .sort(({ value: v1 }, { value: v2 }) => v2 - v1)
-    // .sort((cell1, cell2) => {
-    //   const vicini1 = getVicini(cell1.i, cell1.j).map(({ cell }) => cell);
-    //   const vicini2 = getVicini(cell2.i, cell2.j).map(({ cell }) => cell);
-    //   const sum1 = [vicini1, cell1]
-    //     .map(({ value }) => value)
-    //     .reduce((a, b) => a + b);
-    //   const sum2 = [vicini2, cell2]
-    //     .map(({ value }) => value)
-    //     .reduce((a, b) => a + b);
-    //   return sum2 - sum1;
-    // })
+    // .sort(({ value: v1 }, { value: v2 }) => v2 - v1)
+    .sort((cell1, cell2) => {
+      const vicini1 = getVicini(cell1.i, cell1.j).map(({ cell }) => cell);
+      const vicini2 = getVicini(cell2.i, cell2.j).map(({ cell }) => cell);
+      const sum1 = [...vicini1, cell1]
+        .map(({ value }) => value)
+        .reduce((a, b) => parseInt(a) + parseInt(b));
+      const sum2 = [...vicini2, cell2]
+        .map(({ value }) => value)
+        .reduce((a, b) => parseInt(a) + parseInt(b));
+      return sum2 - sum1;
+    })
     .slice(0, S)
     .forEach(({ i, j }, snakeId) => {
       matrix[i][j].snakeId = snakeId;
@@ -153,8 +133,9 @@ for (let FILENAME of FILENAMES) {
   // Solution
   const outputPath = `output/${FILENAME}.output.txt`;
   fs.writeFileSync(outputPath, "");
+  const resortedSnakes = snakes.sort(({ id: id1 }, { id: id2 }) => id1 - id2);
   for (let s = 0; s < S; s++) {
-    const snake = snakes[s];
+    const snake = resortedSnakes[s];
     let sol = `${snake.initial.j} ${snake.initial.i} ${snake.path.trim()}`;
     sol += s === S - 1 ? "" : "\n";
 
