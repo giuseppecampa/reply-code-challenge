@@ -6,6 +6,7 @@ const FILENAMES = [
   "03-input-anti-greedy",
   "04-input-low-points",
   "05-input-opposite-points-holes",
+  "06-input-reply-running-man",
 ];
 
 // Global variables
@@ -38,35 +39,35 @@ const moduleRow = (irow) => (irow >= 0 ? irow % R : R - 1);
 
 const moduleCol = (icol) => (icol >= 0 ? icol % C : C - 1);
 
-const nextStep = (i, j) => {
-  const allChoices = [
-    {
-      direction: "L",
-      cell: matrix[i][moduleCol(j - 1)],
-      i,
-      j: moduleCol(j - 1),
-    },
-    {
-      direction: "R",
-      cell: matrix[i][moduleCol(j + 1)],
-      i,
-      j: moduleCol(j + 1),
-    },
-    {
-      direction: "U",
-      cell: matrix[moduleRow(i - 1)][j],
-      i: moduleRow(i - 1),
-      j,
-    },
-    {
-      direction: "D",
-      cell: matrix[moduleRow(i + 1)][j],
-      i: moduleRow(i + 1),
-      j,
-    },
-  ];
+const getVicini = (i, j) => [
+  {
+    direction: "L",
+    cell: matrix[i][moduleCol(j - 1)],
+    i,
+    j: moduleCol(j - 1),
+  },
+  {
+    direction: "R",
+    cell: matrix[i][moduleCol(j + 1)],
+    i,
+    j: moduleCol(j + 1),
+  },
+  {
+    direction: "U",
+    cell: matrix[moduleRow(i - 1)][j],
+    i: moduleRow(i - 1),
+    j,
+  },
+  {
+    direction: "D",
+    cell: matrix[moduleRow(i + 1)][j],
+    i: moduleRow(i + 1),
+    j,
+  },
+];
 
-  const choices = allChoices.filter(
+const nextStep = (i, j) => {
+  const choices = getVicini(i, j).filter(
     ({ cell }) => cell.snakeId === -1 && cell.value !== "*"
   );
 
@@ -117,15 +118,23 @@ for (let FILENAME of FILENAMES) {
   topCells = cells
     .filter(({ value }) => value !== "*")
     .sort(({ value: v1 }, { value: v2 }) => v2 - v1)
+    // .sort((cell1, cell2) => {
+    //   const vicini1 = getVicini(cell1.i, cell1.j).map(({ cell }) => cell);
+    //   const vicini2 = getVicini(cell2.i, cell2.j).map(({ cell }) => cell);
+    //   const sum1 = [vicini1, cell1]
+    //     .map(({ value }) => value)
+    //     .reduce((a, b) => a + b);
+    //   const sum2 = [vicini2, cell2]
+    //     .map(({ value }) => value)
+    //     .reduce((a, b) => a + b);
+    //   return sum2 - sum1;
+    // })
     .slice(0, S)
     .forEach(({ i, j }, snakeId) => {
       matrix[i][j].snakeId = snakeId;
       snakes[snakeId].initial = { i, j };
       snakes[snakeId].current = { i, j };
     });
-
-  console.log(snakes);
-  console.log(matrix);
 
   // Scelgo i movimenti degli snakes
   for (let s = 0; s < S; s++) {
@@ -140,8 +149,6 @@ for (let FILENAME of FILENAMES) {
       snakes[s].path += `${choice.direction} `;
     }
   }
-
-  console.log(snakes);
 
   // Solution
   const outputPath = `output/${FILENAME}.output.txt`;
