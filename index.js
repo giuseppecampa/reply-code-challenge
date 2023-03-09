@@ -1,18 +1,17 @@
 // Constants
 const FILENAMES = [
   "00-example",
-  // "01-the-cloud-abyss",
-  // "02-iot-island-of-terror",
-  // "03-etheryum",
-  // "04-the-desert-of-autonomous-machines",
-  // "05-androids-armageddon",
+  // "01-chilling-cat",
+  // "02-02-swarming-ant",
+  // "03-input-anti-greedy",
+  // "04-input-low-points",
+  // "05-input-opposite-points-holes",
 ];
 
 // Global variables
+let C = 0;
+let R = 0;
 let S = 0;
-let Smax = 0;
-let T = 0;
-let D = 0;
 
 // Functions
 const printTable = (table) => {
@@ -43,33 +42,27 @@ for (let FILENAME of FILENAMES) {
   const lines = data.split("\n");
 
   const sizes = lines[0].trim().split(" ");
-  S = parseInt(sizes[0]);
-  Smax = parseInt(sizes[1]);
-  T = parseInt(sizes[2]);
-  D = parseInt(sizes[3]);
+  C = parseInt(sizes[0]);
+  R = parseInt(sizes[1]);
+  S = parseInt(sizes[2]);
 
-  const demons = [];
-  for (let i = 1; i <= D; i++) {
-    const fields = lines[i].trim().split(" ");
-    const fragments = fields.slice(4).map((x) => parseInt(x));
-    demons.push({
-      index: i - 1,
-      defeated: false,
-      Sc: parseInt(fields[0]),
-      Tr: parseInt(fields[1]),
-      Sr: parseInt(fields[2]),
-      Na: parseInt(fields[3]),
-      fragments: fragments,
-      pts: fragments.reduce((a, b) => a + b, 0),
-    });
+  snakes = lines[1].trim().split(" ");
+
+  matrix = [];
+
+  for (let i = 1; i <= R; i++) {
+    row = lines[2 + i].trim().split(" ");
+    matrix.push(row);
   }
-  printList(demons);
 
-  for (let i = 0; i < T; i++) {
-    console.log(`Turn ${i}`);
+  printList(snakes);
+  printTable(matrix);
 
-    // Solution
-    const outputPath = `output/${FILENAME}.output.txt`;
-    fs.writeFileSync(outputPath, "TODO");
-  }
+  // for (let i = 0; i < T; i++) {
+  //   console.log(`Turn ${i}`);
+
+  //   // Solution
+  //   const outputPath = `output/${FILENAME}.output.txt`;
+  //   fs.writeFileSync(outputPath, "TODO");
+  // }
 }
