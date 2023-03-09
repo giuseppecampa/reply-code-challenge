@@ -50,13 +50,28 @@ for (let FILENAME of FILENAMES) {
 
   matrix = [];
 
-  for (let i = 1; i <= R; i++) {
+  for (let i = 0; i < R; i++) {
     row = lines[2 + i].trim().split(" ");
     matrix.push(row);
   }
 
   printList(snakes);
   printTable(matrix);
+
+  // Ricerca delle prime S celle con valori più alti, ovvero le teste candidate
+  let cells = [];
+
+  for (let i = 0; i < R; i++) {
+    for (let j = 0; j < C; j++) {
+      cells.push({ i, j, value: matrix[i][j] });
+    }
+  }
+  sortedCells = cells
+    .filter(({ value }) => value !== "*")
+    .sort(({ value: v1 }, { value: v2 }) => v2 - v1);
+
+  console.log("Le prime", S, "celle con valori più alti");
+  printList(sortedCells.slice(0, S));
 
   // for (let i = 0; i < T; i++) {
   //   console.log(`Turn ${i}`);
