@@ -1,1 +1,5 @@
-TODO
+5 0 U L L D L
+9 0 L U R U U U
+9 1 R R U U
+2 5 U L
+6 1 R R

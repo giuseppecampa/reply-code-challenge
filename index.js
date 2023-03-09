@@ -1,11 +1,11 @@
 // Constants
 const FILENAMES = [
   "00-example",
-  // "01-chilling-cat",
-  // "02-02-swarming-ant",
-  // "03-input-anti-greedy",
-  // "04-input-low-points",
-  // "05-input-opposite-points-holes",
+  "01-chilling-cat",
+  "02-swarming-ant",
+  "03-input-anti-greedy",
+  "04-input-low-points",
+  "05-input-opposite-points-holes",
 ];
 
 // Global variables
@@ -34,6 +34,45 @@ const printList = (list_) => {
   console.log();
 };
 
+const moduleRow = (irow) => (irow >= 0 ? irow % R : R - 1);
+
+const moduleCol = (icol) => (icol >= 0 ? icol % C : C - 1);
+
+const nextStep = (i, j) => {
+  const allChoices = [
+    {
+      direction: "L",
+      cell: matrix[i][moduleCol(j - 1)],
+      i,
+      j: moduleCol(j - 1),
+    },
+    {
+      direction: "R",
+      cell: matrix[i][moduleCol(j + 1)],
+      i,
+      j: moduleCol(j + 1),
+    },
+    {
+      direction: "U",
+      cell: matrix[moduleRow(i - 1)][j],
+      i: moduleRow(i - 1),
+      j,
+    },
+    {
+      direction: "D",
+      cell: matrix[moduleRow(i + 1)][j],
+      i: moduleRow(i + 1),
+      j,
+    },
+  ];
+
+  const choices = allChoices.filter(
+    ({ cell }) => cell.snakeId === -1 && cell.value !== "*"
+  );
+
+  return choices.sort(({ cell: c1 }, { cell: c2 }) => c2.value - c1.value)[0];
+};
+
 // Main
 for (let FILENAME of FILENAMES) {
   console.log(FILENAME);
@@ -46,38 +85,75 @@ for (let FILENAME of FILENAMES) {
   R = parseInt(sizes[1]);
   S = parseInt(sizes[2]);
 
-  snakes = lines[1].trim().split(" ");
+  snakes = lines[1]
+    .trim()
+    .split(" ")
+    .map((length, id) => ({
+      length: parseInt(length),
+      id,
+      initial: { i: -1, j: -1 },
+      current: { i: -1, j: -1 },
+      path: "",
+    }));
 
   matrix = [];
 
   for (let i = 0; i < R; i++) {
     row = lines[2 + i].trim().split(" ");
-    matrix.push(row);
+    matrix.push([]);
+    for (let j = 0; j < C; j++) {
+      matrix[i].push({ value: row[j], snakeId: -1 });
+    }
   }
-
-  printList(snakes);
-  printTable(matrix);
 
   // Ricerca delle prime S celle con valori più alti, ovvero le teste candidate
   let cells = [];
 
   for (let i = 0; i < R; i++) {
     for (let j = 0; j < C; j++) {
-      cells.push({ i, j, value: matrix[i][j] });
+      cells.push({ i, j, value: matrix[i][j].value });
     }
   }
-  sortedCells = cells
+  topCells = cells
     .filter(({ value }) => value !== "*")
-    .sort(({ value: v1 }, { value: v2 }) => v2 - v1);
+    .sort(({ value: v1 }, { value: v2 }) => v2 - v1)
+    .slice(0, S)
+    .forEach(({ i, j }, snakeId) => {
+      matrix[i][j].snakeId = snakeId;
+      snakes[snakeId].initial = { i, j };
+      snakes[snakeId].current = { i, j };
+    });
 
-  console.log("Le prime", S, "celle con valori più alti");
-  printList(sortedCells.slice(0, S));
+  console.log(snakes);
+  console.log(matrix);
 
-  // for (let i = 0; i < T; i++) {
-  //   console.log(`Turn ${i}`);
+  // Scelgo i movimenti degli snakes
+  for (let s = 0; s < S; s++) {
+    for (let k = 0; k < snakes[s].length - 1; k++) {
+      const { i, j } = snakes[s].current;
+      const choice = nextStep(i, j);
+      if (!choice) {
+        break;
+      }
+      matrix[choice.i][choice.j].snakeId = s;
+      snakes[s].current = { i: choice.i, j: choice.j };
+      snakes[s].path += `${choice.direction} `;
+    }
+  }
 
-  //   // Solution
-  //   const outputPath = `output/${FILENAME}.output.txt`;
-  //   fs.writeFileSync(outputPath, "TODO");
-  // }
+  console.log(snakes);
+
+  // Solution
+  const outputPath = `output/${FILENAME}.output.txt`;
+  fs.writeFileSync(outputPath, "");
+  for (let s = 0; s < S; s++) {
+    const snake = snakes[s];
+    let sol = `${snake.initial.j} ${snake.initial.i} ${snake.path.trim()}`;
+    sol += s === S - 1 ? "" : "\n";
+
+    fs.appendFileSync(
+      outputPath,
+      snake.path.trim().split(" ").length === snake.length - 1 ? sol : "\n"
+    );
+  }
 }
