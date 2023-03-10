@@ -46,11 +46,13 @@ const getVicini = (i, j) => [
 ];
 
 const nextStep = (i, j) => {
-  const choices = getVicini(i, j).filter(
-    ({ cell }) => cell.snakeId === -1 && cell.value !== "*"
-  );
+  const choices = getVicini(i, j).filter(({ cell }) => cell.snakeId === -1);
 
-  return choices.sort(({ cell: c1 }, { cell: c2 }) => c2.value - c1.value)[0];
+  return choices.sort(({ cell: c1 }, { cell: c2 }) => {
+    const v1 = c1.value === "*" ? 0 : c1.value;
+    const v2 = c2.value === "*" ? 0 : c2.value;
+    return v2 - v1;
+  })[0];
 };
 
 // Main
@@ -69,6 +71,7 @@ for (let FILENAME of FILENAMES) {
     .trim()
     .split(" ")
     .map((length, id) => ({
+      totLength: parseInt(length),
       length: parseInt(length),
       id,
       initial: { i: -1, j: -1 },
@@ -124,9 +127,17 @@ for (let FILENAME of FILENAMES) {
       if (!choice) {
         break;
       }
-      matrix[choice.i][choice.j].snakeId = s;
-      snakes[s].current = { i: choice.i, j: choice.j };
-      snakes[s].path += `${choice.direction} `;
+      if (choice.cell.value === "*") {
+        if (k === snakes[s].length - 2) {
+          break;
+        }
+        snakes[s].current = { i: choice.i, j: choice.j };
+        snakes[s].path += `${choice.j} ${choice.i} `;
+      } else {
+        matrix[choice.i][choice.j].snakeId = s;
+        snakes[s].current = { i: choice.i, j: choice.j };
+        snakes[s].path += `${choice.direction} `;
+      }
     }
   }
 
